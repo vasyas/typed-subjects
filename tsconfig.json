@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "outDir": "lib",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "lib": [
+      "es2017"
+    ],
+    "declaration": true
+  },
+  "include": ["src/**/*.ts"]
+}
