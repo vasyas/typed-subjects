@@ -44,6 +44,7 @@ export class DataSubject<DataType extends Record<string, unknown>> {
 
   subscribe(
     handle: (message: DataType, ctx: NatsContext<Partial<DataType>>) => Promise<void>,
+    filter: Partial<DataType> = {},
     options: Partial<SubscriptionOptions> = {}
   ): Subscription {
     options = {
@@ -51,7 +52,7 @@ export class DataSubject<DataType extends Record<string, unknown>> {
       ...options,
     }
 
-    const subscription = this.natsConnection.subscribe(this.renderSubject({}))
+    const subscription = this.natsConnection.subscribe(this.renderSubject(filter))
 
     const queue = createWorkerQueue({concurrency: options.concurrency}) // TODO remove on onsubscribe & drain
 
@@ -68,7 +69,11 @@ export class DataSubject<DataType extends Record<string, unknown>> {
     })()
 
 
-    return {}
+    return {
+      cancel() {
+        subscription.unsubscribe()
+      }
+    }
   }
 
   private natsConnection: NatsConnection
@@ -87,7 +92,9 @@ const defaultSubscriptionOptions = {
   concurrency: 1,
 }
 
-export type Subscription = {}
+export type Subscription = {
+  cancel(): void
+}
 
 const codec = JSONCodec()
 
