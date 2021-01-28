@@ -1,5 +1,5 @@
 import {JSONCodec, NatsConnection} from "nats"
-import {createWorkerQueue} from "./workerQueue"
+import {createWorkerQueue, removeWorkerQueue} from "./workerQueue"
 
 export class DataSubject<DataType extends Record<string, unknown>> {
   constructor(private subjectTemplate: string) {}
@@ -52,9 +52,10 @@ export class DataSubject<DataType extends Record<string, unknown>> {
       ...options,
     }
 
-    const subscription = this.natsConnection.subscribe(this.renderSubject(filter))
+    const subject = this.renderSubject(filter)
+    const subscription = this.natsConnection.subscribe(subject)
 
-    const queue = createWorkerQueue({concurrency: options.concurrency}) // TODO remove on onsubscribe & drain
+    const queue = createWorkerQueue({concurrency: options.concurrency}, subject)
 
     ;(async () => {
       for await (const m of subscription) {
@@ -70,8 +71,9 @@ export class DataSubject<DataType extends Record<string, unknown>> {
 
 
     return {
-      cancel() {
-        subscription.unsubscribe()
+      async stop() {
+        await subscription.drain()
+        await removeWorkerQueue(queue)
       }
     }
   }
@@ -93,7 +95,7 @@ const defaultSubscriptionOptions = {
 }
 
 export type Subscription = {
-  cancel(): void
+  stop(): Promise<void>
 }
 
 const codec = JSONCodec()
