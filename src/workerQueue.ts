@@ -1,5 +1,4 @@
 import PQueue from "p-queue"
-import log from "loglevel"
 
 const workerQueues: PQueue[] = []
 
@@ -35,8 +34,6 @@ export async function removeWorkerQueue(queue: PQueue) {
 }
 
 export async function drainWorkerQueues() {
-  log.info("Draining worker queues")
-
   await Promise.all(workerQueues.map((q) => q.onIdle()))
 }
 
