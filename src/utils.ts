@@ -1,4 +1,3 @@
-
 export function getObjectProps(obj) {
   let props = []
 
@@ -10,3 +9,8 @@ export function getObjectProps(obj) {
   return Array.from(new Set(props)).filter((p) => p != "constructor")
 }
 
+export function errorResponse(e) {
+  return {
+    error: e.message
+  }
+}

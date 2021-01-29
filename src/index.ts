@@ -1,2 +1,4 @@
 export {drainWorkerQueues, setWorkerQueueListeners} from "./workerQueue"
-export {connectSubjects, NatsContext, Subscription, DataSubject, SubscriptionOptions} from "./dataSubjects"
+export {connectSubjects, Subscription, SubscriptionOptions, SubjectWithWorkers} from "./SubjectWithWorkers"
+export {DataSubject} from "./DataSubject"
+export {TypedSubject} from "./TypedSubject"
