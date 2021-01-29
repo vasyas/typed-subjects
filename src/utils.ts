@@ -1,5 +1,5 @@
 
-function getObjectProps(obj) {
+export function getObjectProps(obj) {
   let props = []
 
   while (!!obj && obj != Object.prototype) {

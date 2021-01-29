@@ -1,4 +1,5 @@
 import {JSONCodec, NatsConnection} from "nats"
+import { getObjectProps } from "./utils"
 import {createWorkerQueue, removeWorkerQueue} from "./workerQueue"
 
 export class DataSubject<DataType extends Record<string, unknown>> {
