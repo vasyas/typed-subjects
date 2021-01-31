@@ -14,6 +14,10 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
   }
 
   async requestSubject(subject: string, message: MessageType): Promise<ResponseType> {
+    if (!this.natsConnection) {
+      throw new Error(`Subject ${subject} is not connected`)
+    }
+
     const response = await this.natsConnection.request(subject, jsonMessageCodec.encode(message))
     const responseData = jsonMessageCodec.decode(response.data)
     assertErrorResponse(responseData)
@@ -21,6 +25,10 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
   }
 
   publishSubject(subject: string, message: MessageType) {
+    if (!this.natsConnection) {
+      throw new Error(`Subject ${subject} is not connected`)
+    }
+
     this.natsConnection.publish(subject, jsonMessageCodec.encode(message))
   }
 
@@ -29,6 +37,10 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
     handle: (message: MessageType, subject: string) => Promise<ResponseType>,
     options: Partial<SubscriptionOptions> = {}
   ): Subscription {
+    if (!this.natsConnection) {
+      throw new Error(`Subject ${subject} is not connected`)
+    }
+
     options = {
       ...defaultSubscriptionOptions,
       ...options,

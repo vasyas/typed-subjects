@@ -16,7 +16,7 @@ export function errorResponse(e) {
 }
 
 export function assertErrorResponse(r) {
-  if ("_error" in r) {
+  if (r && "_error" in r) {
     throw new RemoteError(r._error)
   }
 }
