@@ -11,6 +11,18 @@ export function getObjectProps(obj) {
 
 export function errorResponse(e) {
   return {
-    error: e.message
+    _error: e.message,
+  }
+}
+
+export function assertErrorResponse(r) {
+  if ("_error" in r) {
+    throw new RemoteError(r._error)
+  }
+}
+
+export class RemoteError extends Error {
+  constructor(message) {
+    super(message)
   }
 }

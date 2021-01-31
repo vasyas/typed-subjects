@@ -1,9 +1,24 @@
 import log from "loglevel"
 import {JSONCodec, NatsConnection} from "nats"
-import {errorResponse, getObjectProps} from "./utils"
+import {assertErrorResponse, errorResponse, getObjectProps} from "./utils"
 import {createWorkerQueue, removeWorkerQueue} from "./workerQueue"
+import CallableInstance from "callable-instance"
 
-export class SubjectWithWorkers<MessageType, ResponseType = void> {
+export class SubjectWithWorkers<MessageType, ResponseType = void> extends CallableInstance<
+  [MessageType],
+  Promise<ResponseType>
+> {
+  constructor(callableMethod = "requestSubject") {
+    super(callableMethod)
+  }
+
+  async requestSubject(subject: string, message: MessageType): Promise<ResponseType> {
+    const response = await this.natsConnection.request(subject, codec.encode(message))
+    const responseData = codec.decode(response.data)
+    assertErrorResponse(responseData)
+    return responseData as ResponseType
+  }
+
   publishSubject(subject: string, message: MessageType) {
     this.natsConnection.publish(subject, codec.encode(message))
   }
@@ -30,7 +45,8 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> {
           try {
             const r = handle(data, subject)
 
-            if (m.reply) { // awaiting reply
+            if (m.reply) {
+              // awaiting reply
               m.respond(codec.encode(r))
             }
           } catch (e) {
@@ -48,7 +64,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> {
       async stop() {
         await subscription.drain()
         await removeWorkerQueue(queue)
-      }
+      },
     }
   }
 
@@ -79,12 +95,13 @@ export function connectSubjects(root: Record<string, any>, natsConnection: NatsC
   keys.forEach((key) => {
     const item = root[key]
 
+    if ("setNatsConnection" in item) {
+      item.setNatsConnection(natsConnection)
+      return
+    }
+
     if (item && typeof item == "object") {
-      if ("setNatsConnection" in item) {
-        item.setNatsConnection(natsConnection)
-      } else {
-        connectSubjects(item, natsConnection)
-      }
+      connectSubjects(item, natsConnection)
     }
   })
 }
