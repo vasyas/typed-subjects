@@ -1,8 +1,9 @@
+import CallableInstance from "callable-instance"
 import log from "loglevel"
-import {JSONCodec, NatsConnection} from "nats"
+import {NatsConnection} from "nats"
+import {jsonMessageCodec} from "./jsonMessageCodec"
 import {assertErrorResponse, errorResponse, getObjectProps} from "./utils"
 import {createWorkerQueue, removeWorkerQueue} from "./workerQueue"
-import CallableInstance from "callable-instance"
 
 export class SubjectWithWorkers<MessageType, ResponseType = void> extends CallableInstance<
   [MessageType],
@@ -13,14 +14,14 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
   }
 
   async requestSubject(subject: string, message: MessageType): Promise<ResponseType> {
-    const response = await this.natsConnection.request(subject, codec.encode(message))
-    const responseData = codec.decode(response.data)
+    const response = await this.natsConnection.request(subject, jsonMessageCodec.encode(message))
+    const responseData = jsonMessageCodec.decode(response.data)
     assertErrorResponse(responseData)
     return responseData as ResponseType
   }
 
   publishSubject(subject: string, message: MessageType) {
-    this.natsConnection.publish(subject, codec.encode(message))
+    this.natsConnection.publish(subject, jsonMessageCodec.encode(message))
   }
 
   subscribeSubject(
@@ -39,21 +40,21 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
     ;(async () => {
       for await (const m of subscription) {
-        const data: MessageType = codec.decode(m.data) as any
+        const data: MessageType = jsonMessageCodec.decode(m.data) as any
 
         await queue.add(async () => {
           try {
-            const r = handle(data, subject)
+            const r = await handle(data, subject)
 
             if (m.reply) {
               // awaiting reply
-              m.respond(codec.encode(r))
+              m.respond(jsonMessageCodec.encode(r))
             }
           } catch (e) {
             log.error(`Cannot handle subject ${subject} with data ${data}`, e)
 
             if (m.reply) {
-              m.respond(codec.encode(errorResponse(e)))
+              m.respond(jsonMessageCodec.encode(errorResponse(e)))
             }
           }
         })
@@ -86,8 +87,6 @@ export type SubscriptionOptions = {
 const defaultSubscriptionOptions = {
   concurrency: 1,
 }
-
-const codec = JSONCodec()
 
 export function connectSubjects(root: Record<string, any>, natsConnection: NatsConnection) {
   const keys = getObjectProps(root)
