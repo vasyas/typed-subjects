@@ -6,6 +6,12 @@ import {Middleware} from "./middleware"
 import {assertErrorResponse, composeMiddleware, errorResponse, getObjectProps} from "./utils"
 import {createWorkerQueue, removeWorkerQueue} from "./workerQueue"
 
+/**
+ * Base class for working with Subjects.
+ * Subscribers have a configurable pool of workers.
+ *
+ * Subclasses have a more handy API.
+ */
 export class SubjectWithWorkers<MessageType, ResponseType = void> extends CallableInstance<
   [MessageType],
   Promise<ResponseType>

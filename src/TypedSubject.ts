@@ -1,5 +1,8 @@
 import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
 
+/**
+ * Topic that can be subscribed and published to. Subject is a constant string.
+ */
 export class TypedSubject<MessageType> extends SubjectWithWorkers<MessageType> {
   constructor(private subject: string) {
     super()

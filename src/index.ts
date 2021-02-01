@@ -5,7 +5,7 @@ export {
   SubscriptionOptions,
   SubjectWithWorkers,
 } from "./SubjectWithWorkers"
-export {DataSubject} from "./DataSubject"
+export {FilteringSubject} from "./FilteringSubject"
 export {TypedSubject} from "./TypedSubject"
 export {RemoteProcedure} from "./RemoteProcedure"
 export {RemoteError} from "./utils"

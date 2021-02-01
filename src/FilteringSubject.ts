@@ -1,6 +1,12 @@
 import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
 
-export class DataSubject<
+/**
+ * Subject that will allow filtering of data based on partial properties of transferred message.
+ * Filter is defined by subject template.
+ *
+ * Implemented using NATS wildcards.
+ */
+export class FilteringSubject<
   DataType extends Record<string, unknown>
 > extends SubjectWithWorkers<DataType> {
   constructor(private subjectTemplate: string) {
