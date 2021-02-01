@@ -2,7 +2,8 @@ import CallableInstance from "callable-instance"
 import log from "loglevel"
 import {NatsConnection} from "nats"
 import {jsonMessageCodec} from "./jsonMessageCodec"
-import {assertErrorResponse, errorResponse, getObjectProps} from "./utils"
+import {Middleware} from "./middleware"
+import {assertErrorResponse, composeMiddleware, errorResponse, getObjectProps} from "./utils"
 import {createWorkerQueue, removeWorkerQueue} from "./workerQueue"
 
 export class SubjectWithWorkers<MessageType, ResponseType = void> extends CallableInstance<
@@ -34,7 +35,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
   subscribeSubject(
     subject: string,
-    handle: (message: MessageType, subject: string) => Promise<ResponseType>,
+    handle: (message: MessageType, ctx: Context) => Promise<ResponseType>,
     options: Partial<SubscriptionOptions> = {}
   ): Subscription {
     if (!this.natsConnection) {
@@ -46,6 +47,10 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
       ...options,
     }
 
+    const middleware = Array.isArray(options.middleware)
+      ? composeMiddleware(...options.middleware)
+      : options.middleware
+
     const subscription = this.natsConnection.subscribe(subject)
 
     const queue = createWorkerQueue({concurrency: options.concurrency}, subject)
@@ -56,7 +61,10 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
         await queue.add(async () => {
           try {
-            const r = await handle(data, subject)
+            const context = {subject}
+
+            const invokeLocalMethod = (p = data) => handle(p, context)
+            const r = await middleware(context, invokeLocalMethod, data)
 
             if (m.reply) {
               // awaiting reply
@@ -92,12 +100,18 @@ export type Subscription = {
   stop(): Promise<void>
 }
 
-export type SubscriptionOptions = {
-  concurrency: number
+export type Context = {
+  subject: string
 }
 
-const defaultSubscriptionOptions = {
+export type SubscriptionOptions = {
+  concurrency: number
+  middleware: Middleware | Middleware[]
+}
+
+const defaultSubscriptionOptions: SubscriptionOptions = {
   concurrency: 1,
+  middleware: (ctx, next, params) => next(params),
 }
 
 export function connectSubjects(root: Record<string, any>, natsConnection: NatsConnection) {

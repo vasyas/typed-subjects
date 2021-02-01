@@ -1,6 +1,8 @@
-import {SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
+import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
 
-export class DataSubject<DataType extends Record<string, unknown>> extends SubjectWithWorkers<DataType> {
+export class DataSubject<
+  DataType extends Record<string, unknown>
+> extends SubjectWithWorkers<DataType> {
   constructor(private subjectTemplate: string) {
     super()
   }
@@ -10,18 +12,22 @@ export class DataSubject<DataType extends Record<string, unknown>> extends Subje
   }
 
   subscribe(
-    handle: (message: DataType, subject: string, ctx: DataSubjectContext<Partial<DataType>>) => Promise<void>,
+    handle: (message: DataType, ctx: DataSubjectContext<Partial<DataType>>) => Promise<void>,
     filter: Partial<DataType> = {},
     options: Partial<SubscriptionOptions> = {}
   ): Subscription {
-    return this.subscribeSubject(this.renderSubject(filter), (message: DataType, subject: string) => {
-      const ctx: DataSubjectContext<Partial<DataType>> = {
-        params: this.parseSubject(subject),
-      }
+    return this.subscribeSubject(
+      this.renderSubject(filter),
+      (message: DataType, ctx: Context) => {
+        const dsCtx: DataSubjectContext<Partial<DataType>> = {
+          subject: ctx.subject,
+          params: this.parseSubject(ctx.subject),
+        }
 
-      return handle(message, subject, ctx)
-
-    }, options)
+        return handle(message, dsCtx)
+      },
+      options
+    )
   }
 
   private renderSubject(params: Partial<DataType>): string {
@@ -55,6 +61,6 @@ export class DataSubject<DataType extends Record<string, unknown>> extends Subje
   }
 }
 
-export type DataSubjectContext<ParamsType> = {
+export type DataSubjectContext<ParamsType> = Context & {
   params: ParamsType
 }

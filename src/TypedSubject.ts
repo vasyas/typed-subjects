@@ -1,11 +1,8 @@
-import {SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
+import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
 
-export class TypedSubject<MessageType, ResponseType = never> extends SubjectWithWorkers<
-  MessageType,
-  ResponseType
-> {
+export class TypedSubject<MessageType> extends SubjectWithWorkers<MessageType> {
   constructor(private subject: string) {
-    super("request")
+    super()
   }
 
   publish(message: MessageType) {
@@ -13,13 +10,9 @@ export class TypedSubject<MessageType, ResponseType = never> extends SubjectWith
   }
 
   subscribe(
-    handle: (message: MessageType, subject: string) => Promise<ResponseType>,
+    handle: (message: MessageType, ctx: Context) => Promise<void>,
     options: Partial<SubscriptionOptions> = {}
   ): Subscription {
     return super.subscribeSubject(this.subject, handle, options)
-  }
-
-  request(message: MessageType): Promise<ResponseType> {
-    return super.requestSubject(this.subject, message)
   }
 }
