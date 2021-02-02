@@ -126,7 +126,11 @@ export function connectSubjects(root: Record<string, any>, natsConnection: NatsC
   keys.forEach((key) => {
     const item = root[key]
 
-    if ("setNatsConnection" in item) {
+    if (
+      item &&
+      (typeof item == "object" || typeof item == "function") &&
+      "setNatsConnection" in item
+    ) {
       item.setNatsConnection(natsConnection)
       return
     }
