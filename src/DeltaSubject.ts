@@ -10,8 +10,8 @@ import {TypedSubject} from "./TypedSubject"
 
 export class DeltaSubject<MessageType> {
   constructor(private subject: string) {
-    this.getFirst = new RemoteProcedure<void, MessageType>(subject + ".first")
-    this.updates = new TypedSubject<MessageType>(subject + ".updates")
+    this.getFirst = new RemoteProcedure<void, MessageType>(subject + "._first")
+    this.updates = new TypedSubject<MessageType>(subject + "._updates")
   }
 
   async subscribe(
