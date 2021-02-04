@@ -57,7 +57,10 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
       ? composeMiddleware(...options.middleware)
       : options.middleware
 
-    const subscription = this.natsConnection.subscribe(subject)
+    const subscription = this.natsConnection.subscribe(
+      subject,
+      options.queue ? {queue: options.queue} : undefined
+    )
 
     const queue = createWorkerQueue({concurrency: options.concurrency}, subject)
 
@@ -113,6 +116,7 @@ export type Context = {
 export type SubscriptionOptions = {
   concurrency: number
   middleware: Middleware | Middleware[]
+  queue?: string
 }
 
 const defaultSubscriptionOptions: SubscriptionOptions = {
