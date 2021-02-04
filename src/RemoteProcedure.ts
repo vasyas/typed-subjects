@@ -9,7 +9,7 @@ export class RemoteProcedure<RequestType = void, ResponseType = void> extends Su
   RequestType,
   ResponseType
 > {
-  constructor(private subject: string) {
+  constructor(private subject: string, private options: Partial<RemoteProcedureOptions> = {}) {
     super("request")
   }
 
@@ -21,6 +21,14 @@ export class RemoteProcedure<RequestType = void, ResponseType = void> extends Su
   }
 
   request(message: RequestType): Promise<ResponseType> {
-    return super.requestSubject(this.subject, message)
+    return super.requestSubject(
+      this.subject,
+      message,
+      this.options.timeout ? {timeout: this.options.timeout} : undefined
+    )
   }
+}
+
+export type RemoteProcedureOptions = {
+  timeout: number
 }

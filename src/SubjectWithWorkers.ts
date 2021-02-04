@@ -20,12 +20,20 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
     super(callableMethod)
   }
 
-  async requestSubject(subject: string, message: MessageType): Promise<ResponseType> {
+  async requestSubject(
+    subject: string,
+    message: MessageType,
+    requestOptions: Partial<RequestOptions> = {}
+  ): Promise<ResponseType> {
     if (!this.natsConnection) {
       throw new Error(`Subject ${subject} is not connected`)
     }
 
-    const response = await this.natsConnection.request(subject, jsonMessageCodec.encode(message))
+    const response = await this.natsConnection.request(
+      subject,
+      jsonMessageCodec.encode(message),
+      requestOptions.timeout ? {timeout: requestOptions.timeout} : undefined
+    )
     const responseData = jsonMessageCodec.decode(response.data)
     assertErrorResponse(responseData)
     return responseData as ResponseType
@@ -143,4 +151,8 @@ export function connectSubjects(root: Record<string, any>, natsConnection: NatsC
       connectSubjects(item, natsConnection)
     }
   })
+}
+
+export type RequestOptions = {
+  timeout: number
 }
