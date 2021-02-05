@@ -16,14 +16,8 @@ export class WorkerQueue {
     this.pqueue.on("next", sendStats)
   }
 
-  /** Will wait until queue is empty */
-  async add(task: () => Promise<void>): Promise<void> {
-    if (this.pqueue.size < this.concurrency) {
-      this.pqueue.add(task)
-    } else {
-      // wait until empty
-      // listen to next; resolve promise
-    }
+  add(task: () => Promise<void>): Promise<void> {
+    return this.pqueue.add(task)
   }
 
   /** Wait for all tasks to complete and queue is empty */
