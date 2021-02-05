@@ -1,4 +1,4 @@
-export {drainWorkerQueues, setWorkerQueueListeners} from "./workerQueue"
+export {drainWorkerQueues, setWorkerQueueListeners, QueueStats} from "./workerQueue"
 export {
   connectSubjects,
   Subscription,
