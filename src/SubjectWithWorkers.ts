@@ -76,7 +76,8 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
       for await (const m of subscription) {
         const data: MessageType = jsonMessageCodec.decode(m.data) as any
 
-        await queue.add(async () => {
+        // alternatively, we can await until queue size is lower then some value to apply backpressure to NATS
+        queue.add(async () => {
           try {
             const context = {subject}
 
