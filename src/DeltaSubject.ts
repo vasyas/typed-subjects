@@ -5,7 +5,7 @@
  * RemoteProcedure is called by subscriber when subscribing.
  */
 import {RemoteProcedure} from "./RemoteProcedure"
-import {Context, SubscriptionOptions} from "./SubjectWithWorkers"
+import {Context, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
 import {TypedSubject} from "./TypedSubject"
 
 export class DeltaSubject<MessageType> {
@@ -17,18 +17,18 @@ export class DeltaSubject<MessageType> {
   async subscribe(
     handle: (message: MessageType, ctx: Context) => Promise<void>,
     options: Partial<SubscriptionOptions> = {}
-  ) {
+  ): Promise<Subscription> {
     const first = await this.getFirst()
     setTimeout(() => handle(first, {subject: this.subject}), 0)
 
-    this.updates.subscribe(handle, options)
+    return this.updates.subscribe(handle, options)
   }
 
   first(
     supplier: (ctx: Context) => Promise<MessageType>,
     options: Partial<SubscriptionOptions> = {}
-  ) {
-    this.getFirst.implement((msg, ctx) => supplier(ctx), options)
+  ): Subscription {
+    return this.getFirst.implement((msg, ctx) => supplier(ctx), options)
   }
 
   publish(message: MessageType) {

@@ -70,7 +70,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
       options.queue ? {queue: options.queue} : undefined
     )
 
-    const queue = createWorkerQueue({concurrency: options.concurrency}, subject)
+    const queue = createWorkerQueue({concurrency: options.concurrency})
 
     ;(async () => {
       for await (const m of subscription) {
@@ -103,6 +103,19 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
         await subscription.drain()
         await removeWorkerQueue(queue)
       },
+      monitor(opts) {
+        if (opts.queue) {
+          function sendStats() {
+            opts.queue(subject, {
+              running: queue.pending,
+              queued: queue.size,
+            })
+          }
+
+          queue.on("add", sendStats)
+          queue.on("next", sendStats)
+        }
+      },
     }
   }
 
@@ -115,6 +128,12 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
 export type Subscription = {
   stop(): Promise<void>
+  monitor(opts: {queue: (name: string, size: QueueStats) => void})
+}
+
+export type QueueStats = {
+  running: number
+  queued: number
 }
 
 export type Context = {
