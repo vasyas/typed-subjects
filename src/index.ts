@@ -1,11 +1,10 @@
-export {drainWorkerQueues, setWorkerQueuesListener} from "./workerQueue"
+export {drainWorkerQueues, setWorkerQueuesListener, QueueStats} from "./WorkerQueue"
 export {
   connectSubjects,
   Subscription,
   SubscriptionOptions,
   SubjectWithWorkers,
   RequestOptions,
-  QueueStats,
 } from "./SubjectWithWorkers"
 export {FilteringSubject} from "./FilteringSubject"
 export {TypedSubject} from "./TypedSubject"

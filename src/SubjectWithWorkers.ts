@@ -4,7 +4,7 @@ import {NatsConnection} from "nats"
 import {jsonMessageCodec} from "./jsonMessageCodec"
 import {Middleware} from "./middleware"
 import {assertErrorResponse, composeMiddleware, errorResponse, getObjectProps} from "./utils"
-import {createWorkerQueue, removeWorkerQueue} from "./workerQueue"
+import {createWorkerQueue, QueueStats, removeWorkerQueue} from "./WorkerQueue"
 
 /**
  * Base class for working with Subjects.
@@ -105,15 +105,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
       },
       monitor(opts) {
         if (opts.queue) {
-          function sendStats() {
-            opts.queue(subject, {
-              running: queue.pending,
-              queued: queue.size,
-            })
-          }
-
-          queue.on("add", sendStats)
-          queue.on("next", sendStats)
+          queue.setStatsListener((stats) => opts.queue(subject, stats))
         }
       },
     }
@@ -129,11 +121,6 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 export type Subscription = {
   stop(): Promise<void>
   monitor(opts: {queue: (name: string, size: QueueStats) => void})
-}
-
-export type QueueStats = {
-  running: number
-  queued: number
 }
 
 export type Context = {
