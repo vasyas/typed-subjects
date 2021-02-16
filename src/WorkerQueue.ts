@@ -4,16 +4,8 @@ export class WorkerQueue {
   constructor(private concurrency: number) {
     this.pqueue = new PQueue({concurrency})
 
-    const sendStats = () => {
-      this.statsListener({
-        size: this.concurrency,
-        queued: this.pqueue.size,
-        running: this.pqueue.pending,
-      })
-    }
-
-    this.pqueue.on("add", sendStats)
-    this.pqueue.on("next", sendStats)
+    this.pqueue.on("add", () => this.statsListener(this.getStats()))
+    this.pqueue.on("next", () => this.statsListener(this.getStats()))
   }
 
   add(task: () => Promise<void>): Promise<void> {
@@ -27,6 +19,14 @@ export class WorkerQueue {
 
   setStatsListener(cb: (stats: QueueStats) => void) {
     this.statsListener = cb
+  }
+
+  getStats() {
+    return {
+      size: this.concurrency,
+      queued: this.pqueue.size,
+      running: this.pqueue.pending,
+    }
   }
 
   private pqueue: PQueue
