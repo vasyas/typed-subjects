@@ -8,8 +8,8 @@ export class WorkerQueue {
     this.pqueue.on("next", () => this.statsListener(this.getStats()))
   }
 
-  add(task: () => Promise<void>): Promise<void> {
-    return this.pqueue.add(task)
+  add(task: () => Promise<void>, options?): Promise<void> {
+    return this.pqueue.add(task, options)
   }
 
   /** Wait for all tasks to complete and queue is empty */

@@ -84,25 +84,33 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
         }
 
         // alternatively, we can await until queue size is lower then some value to apply backpressure to NATS
-        queue.add(async () => {
-          try {
-            const context = {subject: m.subject}
+        queue
+          .add(
+            async () => {
+              try {
+                const context = {subject: m.subject}
 
-            const invokeLocalMethod = (p = data) => handle(p, context)
-            const r = await middleware(context, invokeLocalMethod, data)
+                const invokeLocalMethod = (p = data) => handle(p, context)
+                const r = await middleware(context, invokeLocalMethod, data)
 
-            if (m.reply) {
-              // awaiting reply
-              m.respond(jsonMessageCodec.encode(r))
-            }
-          } catch (e) {
-            log.error(`Cannot handle subject ${subject} with data ` + JSON.stringify(data), e)
+                if (m.reply) {
+                  // awaiting reply
+                  m.respond(jsonMessageCodec.encode(r))
+                }
+              } catch (e) {
+                log.error(`Cannot handle subject ${subject} with data ${JSON.stringify(data)}`, e)
 
-            if (m.reply) {
-              m.respond(jsonMessageCodec.encode(errorResponse(e)))
-            }
-          }
-        })
+                if (m.reply) {
+                  m.respond(jsonMessageCodec.encode(errorResponse(e)))
+                }
+              }
+            },
+            options.timeout ? {timeout: options.timeout, throwOnTimeout: true} : undefined
+          )
+          .catch((e) => {
+            // could this really happen? didn't we catch everything above?
+            log.error(`Failing to handle subject ${subject} with data ${JSON.stringify(data)}`, e)
+          })
       }
     })()
 
@@ -137,6 +145,7 @@ export type Context = {
 
 export type SubscriptionOptions = {
   concurrency: number
+  timeout?: number
   middleware: Middleware | Middleware[]
   queue?: string
 }
