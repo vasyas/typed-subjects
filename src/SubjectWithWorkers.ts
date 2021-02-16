@@ -74,12 +74,19 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
     ;(async () => {
       for await (const m of subscription) {
-        const data: MessageType = jsonMessageCodec.decode(m.data) as any
+        let data: MessageType
+
+        try {
+          data = jsonMessageCodec.decode(m.data) as any
+        } catch (e) {
+          log.error(`Cannot handle subject ${subject}, failed to parse data`, e)
+          continue
+        }
 
         // alternatively, we can await until queue size is lower then some value to apply backpressure to NATS
         queue.add(async () => {
           try {
-            const context = {subject}
+            const context = {subject: m.subject}
 
             const invokeLocalMethod = (p = data) => handle(p, context)
             const r = await middleware(context, invokeLocalMethod, data)
