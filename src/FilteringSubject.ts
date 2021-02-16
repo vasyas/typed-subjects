@@ -18,14 +18,14 @@ export class FilteringSubject<
   }
 
   subscribe(
-    handle: (message: DataType, ctx: DataSubjectContext<Partial<DataType>>) => Promise<void>,
+    handle: (message: DataType, ctx: FilteringSubjectContext<Partial<DataType>>) => Promise<void>,
     filter: Partial<DataType> = {},
     options: Partial<SubscriptionOptions> = {}
   ): Subscription {
     return this.subscribeSubject(
       this.renderSubject(filter),
       (message: DataType, ctx: Context) => {
-        const dsCtx: DataSubjectContext<Partial<DataType>> = {
+        const dsCtx: FilteringSubjectContext<Partial<DataType>> = {
           subject: ctx.subject,
           params: this.parseSubject(ctx.subject),
         }
@@ -42,7 +42,7 @@ export class FilteringSubject<
     for (let i = 0; i < tokens.length; i++) {
       if (tokens[i].startsWith("$")) {
         const key = tokens[i].substring(1)
-        tokens[i] = params[key] == null ? "*" : "" + params[key]
+        tokens[i] = params[key] == null ? "*" : encodeSubjectToken("" + params[key])
       }
     }
 
@@ -59,7 +59,7 @@ export class FilteringSubject<
       if (tokens[i].startsWith("$")) {
         const key = tokens[i].substring(1)
 
-        r[key] = subjectParts?.[i]
+        r[key] = decodeSubjectToken(subjectParts?.[i])
       }
     }
 
@@ -67,6 +67,14 @@ export class FilteringSubject<
   }
 }
 
-export type DataSubjectContext<ParamsType> = Context & {
+export type FilteringSubjectContext<ParamsType> = Context & {
   params: ParamsType
+}
+
+function encodeSubjectToken(s): string {
+  return encodeURIComponent(s).replace(/[!'()*\\.]/g, (c) => "%" + c.charCodeAt(0).toString(16))
+}
+
+function decodeSubjectToken(s): string {
+  return decodeURIComponent(s)
 }
