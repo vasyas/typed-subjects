@@ -1,4 +1,10 @@
-import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
+import {
+  Context,
+  RequestOptions,
+  SubjectWithWorkers,
+  Subscription,
+  SubscriptionOptions,
+} from "./SubjectWithWorkers"
 
 /**
  * Remote procedure with single request object and single result object.
@@ -9,7 +15,7 @@ export class RemoteProcedure<RequestType = void, ResponseType = void> extends Su
   RequestType,
   ResponseType
 > {
-  constructor(private subject: string, private options: Partial<RemoteProcedureOptions> = {}) {
+  constructor(private subject: string, private requestOptions: Partial<RequestOptions> = {}) {
     super("request")
   }
 
@@ -24,11 +30,7 @@ export class RemoteProcedure<RequestType = void, ResponseType = void> extends Su
     return super.requestSubject(
       this.subject,
       message,
-      this.options.timeout ? {timeout: this.options.timeout} : undefined
+      this.requestOptions.timeout ? {timeout: this.requestOptions.timeout} : undefined
     )
   }
-}
-
-export type RemoteProcedureOptions = {
-  timeout: number
 }

@@ -1,4 +1,10 @@
-import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
+import {
+  Context,
+  RequestOptions,
+  SubjectWithWorkers,
+  Subscription,
+  SubscriptionOptions,
+} from "./SubjectWithWorkers"
 
 /**
  * Subject that will allow filtering of data based on partial properties of transferred message.
@@ -7,18 +13,44 @@ import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./
  * Implemented using NATS wildcards.
  */
 export class FilteringSubject<
-  DataType extends Record<string, unknown>
-> extends SubjectWithWorkers<DataType> {
-  constructor(private subjectTemplate: string) {
-    super()
+  DataType extends Record<string, unknown>,
+  ResponseType = void
+> extends SubjectWithWorkers<DataType, ResponseType> {
+  constructor(
+    private subjectTemplate: string,
+    private requestOptions: Partial<RequestOptions> = {}
+  ) {
+    super("request")
   }
 
   publish(message: DataType) {
     super.publishSubject(this.renderSubject(message), message)
   }
 
+  request(message: DataType): Promise<ResponseType> {
+    return super.requestSubject(
+      this.renderSubject(message),
+      message,
+      this.requestOptions.timeout ? {timeout: this.requestOptions.timeout} : undefined
+    )
+  }
+
+  implement(
+    handle: (
+      message: DataType,
+      ctx: FilteringSubjectContext<Partial<DataType>>
+    ) => Promise<ResponseType>,
+    filter: Partial<DataType> = {},
+    options: Partial<SubscriptionOptions> = {}
+  ): Subscription {
+    return this.subscribe(handle, filter, options)
+  }
+
   subscribe(
-    handle: (message: DataType, ctx: FilteringSubjectContext<Partial<DataType>>) => Promise<void>,
+    handle: (
+      message: DataType,
+      ctx: FilteringSubjectContext<Partial<DataType>>
+    ) => Promise<ResponseType>,
     filter: Partial<DataType> = {},
     options: Partial<SubscriptionOptions> = {}
   ): Subscription {
