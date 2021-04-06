@@ -132,6 +132,10 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
   }
 
   protected natsConnection: NatsConnection
+
+  isConnected() {
+    return !!this.natsConnection
+  }
 }
 
 export type Subscription = {
