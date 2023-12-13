@@ -1,28 +1,79 @@
-import {Codec, ErrorCode, NatsError} from "nats"
+import {ErrorCode, headers, MsgHdrs, NatsError, RequestOptions} from "nats"
 import {TextDecoder, TextEncoder} from "util"
+import zlib from 'zlib'
 
 const TD = new TextDecoder()
 const TE = new TextEncoder()
 
-export const jsonMessageCodec: Codec<unknown> = {
-  encode(d: unknown): Uint8Array {
+const COMPRESS_THRESHOLD = 4096
+
+export const jsonMessageCodec = {
+  encode(d: unknown, error: boolean, opts?: RequestOptions): [Uint8Array, RequestOptions?] {
     try {
       if (d === undefined) {
         d = null
       }
-      return TE.encode(JSON.stringify(d, messageDateToStringReplacer))
+
+      const s = JSON.stringify(d, messageDateToStringReplacer)
+
+      let hdrs: MsgHdrs | null = null
+      let binary: Uint8Array
+
+      if (s.length > COMPRESS_THRESHOLD) {
+        hdrs = headers()
+        hdrs.set("gzip", "true")
+        binary = zlib.gzipSync(s, {
+          level: zlib.constants.Z_DEFAULT_COMPRESSION
+        })
+      } else {
+        binary = TE.encode(s)
+      }
+
+      if (error) {
+        if (!hdrs) {
+          hdrs = headers()
+        }
+
+        hdrs.set("error", "true")
+      }
+
+      if (hdrs) {
+        return [binary, {
+          ...(opts || {}),
+          headers: hdrs
+        } as any] // any b/c of the bug in the NATS types
+      }
+
+      return [binary, opts]
     } catch (err: any) {
       throw NatsError.errorForCode(ErrorCode.BadJson, err)
     }
   },
 
-  decode(a: Uint8Array): unknown {
+  decode(data: Uint8Array, headers?: MsgHdrs): unknown {
     try {
-      return JSON.parse(TD.decode(a), messageStringToDaterReviver)
+      const binary = headers?.has("gzip") ? zlib.gunzipSync(data) : data
+
+      const string = TD.decode(binary)
+
+      const r = JSON.parse(string, messageStringToDaterReviver)
+
+      if (headers?.has("error")) {
+        return new RemoteError(r.message)
+      }
+
+      return r
     } catch (err: any) {
       throw NatsError.errorForCode(ErrorCode.BadJson, err)
     }
-  },
+
+  }
+}
+
+export class RemoteError extends Error {
+  constructor(message: string) {
+    super(message)
+  }
 }
 
 function format(d: Date) {
