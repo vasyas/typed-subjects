@@ -1,4 +1,4 @@
-import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
+import {Context, SubjectWithWorkers, Subscription, SubscriptionOptions} from "./SubjectWithWorkers.js"
 
 /**
  * Topic that can be subscribed and published to. Subject is a constant string.

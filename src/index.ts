@@ -1,14 +1,14 @@
-export {drainWorkerQueues, setWorkerQueuesListener, QueueStats} from "./WorkerQueue"
+export {drainWorkerQueues, setWorkerQueuesListener, QueueStats} from "./WorkerQueue.js"
 export {
   connectSubjects,
   Subscription,
   SubscriptionOptions,
   SubjectWithWorkers,
   RequestOptions,
-} from "./SubjectWithWorkers"
-export {FilteringSubject} from "./FilteringSubject"
-export {TypedSubject} from "./TypedSubject"
-export {RemoteProcedure} from "./RemoteProcedure"
-export {RemoteError} from "./utils"
-export {Middleware} from "./middleware"
-export {DeltaSubject} from "./DeltaSubject"
+} from "./SubjectWithWorkers.js"
+export {FilteringSubject} from "./FilteringSubject.js"
+export {TypedSubject} from "./TypedSubject.js"
+export {RemoteProcedure} from "./RemoteProcedure.js"
+export {RemoteError} from "./utils.js"
+export {Middleware} from "./middleware.js"
+export {DeltaSubject} from "./DeltaSubject.js"

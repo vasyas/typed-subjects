@@ -4,7 +4,7 @@ import {
   SubjectWithWorkers,
   Subscription,
   SubscriptionOptions,
-} from "./SubjectWithWorkers"
+} from "./SubjectWithWorkers.js"
 
 /**
  * Subject that will allow filtering of data based on partial properties of transferred message.
@@ -85,7 +85,7 @@ export class FilteringSubject<
     const tokens = this.subjectTemplate.split(".")
     const subjectParts = subject.split(".")
 
-    const r /*: Partial<DataType> */ = {} // guarantied by user, who is constructing DataSubject with correct args
+    const r: Record<string, string> = {}
 
     for (let i = 0; i < tokens.length; i++) {
       if (tokens[i].startsWith("$")) {
@@ -95,7 +95,7 @@ export class FilteringSubject<
       }
     }
 
-    return r
+    return r as Partial<DataType> // guarantied by user, who is constructing DataSubject with correct args
   }
 }
 
@@ -103,10 +103,10 @@ export type FilteringSubjectContext<ParamsType> = Context & {
   params: ParamsType
 }
 
-function encodeSubjectToken(s): string {
+function encodeSubjectToken(s: string): string {
   return encodeURIComponent(s).replace(/[!'()*\\.]/g, (c) => "%" + c.charCodeAt(0).toString(16))
 }
 
-function decodeSubjectToken(s): string {
+function decodeSubjectToken(s: string): string {
   return decodeURIComponent(s)
 }

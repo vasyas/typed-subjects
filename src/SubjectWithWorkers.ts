@@ -1,10 +1,10 @@
 import CallableInstance from "callable-instance"
 import log from "loglevel"
 import {NatsConnection} from "nats"
-import {jsonMessageCodec} from "./jsonMessageCodec"
-import {Middleware} from "./middleware"
-import {assertErrorResponse, composeMiddleware, errorResponse, getObjectProps} from "./utils"
-import {createWorkerQueue, QueueStats, removeWorkerQueue} from "./WorkerQueue"
+import {jsonMessageCodec} from "./jsonMessageCodec.js"
+import {Middleware} from "./middleware.js"
+import {assertErrorResponse, composeMiddleware, errorResponse, getObjectProps} from "./utils.js"
+import {createWorkerQueue, QueueStats, removeWorkerQueue} from "./WorkerQueue.js"
 
 /**
  * Base class for working with Subjects.
@@ -91,13 +91,13 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
                 const context = {subject: m.subject}
 
                 const invokeLocalMethod = (p = data) => handle(p, context)
-                const r = await middleware(context, invokeLocalMethod, data)
+                const r = middleware ? await middleware(context, invokeLocalMethod, data) : await invokeLocalMethod()
 
                 if (m.reply) {
                   // awaiting reply
                   m.respond(jsonMessageCodec.encode(r))
                 }
-              } catch (e) {
+              } catch (e: any) {
                 log.error(`Cannot handle subject ${subject} with data ${JSON.stringify(data)}`, e)
 
                 if (m.reply) {
@@ -131,7 +131,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
     this.natsConnection = natsConnection
   }
 
-  protected natsConnection: NatsConnection
+  protected natsConnection: NatsConnection | undefined = undefined
 
   isConnected() {
     return !!this.natsConnection
@@ -140,7 +140,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
 export type Subscription = {
   stop(): Promise<void>
-  monitor(opts: {queue: (name: string, size: QueueStats) => void})
+  monitor(opts: {queue: (name: string, size: QueueStats) => void}): void
 }
 
 export type Context = {

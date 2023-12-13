@@ -1,5 +1,4 @@
-import {Codec, ErrorCode} from "nats"
-import {NatsError} from "nats/lib/nats-base-client/error"
+import {Codec, ErrorCode, NatsError} from "nats"
 import {TextDecoder, TextEncoder} from "util"
 
 const TD = new TextDecoder()
@@ -12,26 +11,26 @@ export const jsonMessageCodec: Codec<unknown> = {
         d = null
       }
       return TE.encode(JSON.stringify(d, messageDateToStringReplacer))
-    } catch (err) {
-      throw NatsError.errorForCode(ErrorCode.BAD_JSON, err)
+    } catch (err: any) {
+      throw NatsError.errorForCode(ErrorCode.BadJson, err)
     }
   },
 
   decode(a: Uint8Array): unknown {
     try {
       return JSON.parse(TD.decode(a), messageStringToDaterReviver)
-    } catch (err) {
-      throw NatsError.errorForCode(ErrorCode.BAD_JSON, err)
+    } catch (err: any) {
+      throw NatsError.errorForCode(ErrorCode.BadJson, err)
     }
   },
 }
 
-function format(d) {
+function format(d: Date) {
   const s = d.toISOString()
   return s.substring(0, s.lastIndexOf(".")) + "Z"
 }
 
-function messageDateToStringReplacer(this, key, value) {
+function messageDateToStringReplacer(this: unknown, key: string, value: unknown) {
   if (value instanceof Date) {
     return format(value)
   }
@@ -39,7 +38,7 @@ function messageDateToStringReplacer(this, key, value) {
   return value
 }
 
-function messageStringToDaterReviver(this, key, val) {
+function messageStringToDaterReviver(this: unknown, key: string, val: unknown) {
   if (typeof val == "string") {
     if (ISO8601_secs.test(val)) {
       return new Date(val)

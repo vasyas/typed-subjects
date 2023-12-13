@@ -1,7 +1,7 @@
-import {Middleware} from "./middleware"
+import {Middleware} from "./middleware.js"
 
-export function getObjectProps(obj) {
-  let props = []
+export function getObjectProps(obj: unknown) {
+  let props: string[] = []
 
   while (!!obj && obj != Object.prototype) {
     props = props.concat(Object.getOwnPropertyNames(obj))
@@ -11,20 +11,20 @@ export function getObjectProps(obj) {
   return Array.from(new Set(props)).filter((p) => p != "constructor")
 }
 
-export function errorResponse(e) {
+export function errorResponse(e: Error) {
   return {
     _error: e.message,
   }
 }
 
-export function assertErrorResponse(r) {
-  if (r && "_error" in r) {
+export function assertErrorResponse(r: any | {_error: string}) {
+  if (r && typeof r == "object" && "_error" in r) {
     throw new RemoteError(r._error)
   }
 }
 
 export class RemoteError extends Error {
-  constructor(message) {
+  constructor(message: string) {
     super(message)
   }
 }
@@ -34,7 +34,7 @@ export function composeMiddleware(...middleware: Middleware[]): Middleware {
     let index = -1
     return dispatch(0, params)
 
-    function dispatch(i, p) {
+    function dispatch(i: number, p: unknown): Promise<unknown> {
       if (i <= index) return Promise.reject(new Error("next() called multiple times"))
 
       index = i

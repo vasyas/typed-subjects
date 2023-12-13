@@ -1,14 +1,14 @@
-import PQueue from "p-queue"
+import PQueue, {QueueAddOptions} from "p-queue"
 
 export class WorkerQueue {
-  constructor(private concurrency: number) {
+  constructor(private concurrency?: number) {
     this.pqueue = new PQueue({concurrency})
 
     this.pqueue.on("add", () => this.statsListener(this.getStats()))
     this.pqueue.on("next", () => this.statsListener(this.getStats()))
   }
 
-  add(task: () => Promise<void>, options?): Promise<void> {
+  add(task: () => Promise<void>, options?: Partial<QueueAddOptions>): Promise<void> {
     return this.pqueue.add(task, options)
   }
 
@@ -34,7 +34,7 @@ export class WorkerQueue {
 }
 
 export type QueueStats = {
-  size: number
+  size: number | undefined
   running: number
   queued: number
 }
@@ -43,8 +43,8 @@ const workerQueues: WorkerQueue[] = []
 
 let onWorkerQueuesChanged = (count: number) => {}
 
-export function createWorkerQueue({concurrency}): WorkerQueue {
-  const queue = new WorkerQueue(concurrency)
+export function createWorkerQueue(opts: {concurrency?: number}): WorkerQueue {
+  const queue = new WorkerQueue(opts.concurrency)
   workerQueues.push(queue)
 
   onWorkerQueuesChanged(workerQueues.length)
