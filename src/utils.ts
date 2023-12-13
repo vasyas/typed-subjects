@@ -1,4 +1,5 @@
 import {Middleware} from "./middleware.js"
+import {RemoteError} from "./jsonMessageCodec.js"
 
 export function getObjectProps(obj: unknown) {
   let props: string[] = []
@@ -11,21 +12,9 @@ export function getObjectProps(obj: unknown) {
   return Array.from(new Set(props)).filter((p) => p != "constructor")
 }
 
-export function errorResponse(e: Error) {
-  return {
-    _error: e.message,
-  }
-}
-
 export function assertErrorResponse(r: any | {_error: string}) {
   if (r && typeof r == "object" && "_error" in r) {
     throw new RemoteError(r._error)
-  }
-}
-
-export class RemoteError extends Error {
-  constructor(message: string) {
-    super(message)
   }
 }
 

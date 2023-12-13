@@ -9,6 +9,6 @@ export {
 export {FilteringSubject} from "./FilteringSubject.js"
 export {TypedSubject} from "./TypedSubject.js"
 export {RemoteProcedure} from "./RemoteProcedure.js"
-export {RemoteError} from "./utils.js"
+export {RemoteError} from "./jsonMessageCodec.js"
 export {Middleware} from "./middleware.js"
 export {DeltaSubject} from "./DeltaSubject.js"

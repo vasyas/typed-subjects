@@ -1,9 +1,9 @@
 import CallableInstance from "callable-instance"
 import log from "loglevel"
 import {NatsConnection} from "nats"
-import {jsonMessageCodec} from "./jsonMessageCodec.js"
+import {jsonMessageCodec, RemoteError} from "./jsonMessageCodec.js"
 import {Middleware} from "./middleware.js"
-import {assertErrorResponse, composeMiddleware, errorResponse, getObjectProps} from "./utils.js"
+import {composeMiddleware, getObjectProps} from "./utils.js"
 import {createWorkerQueue, QueueStats, removeWorkerQueue} from "./WorkerQueue.js"
 
 /**
@@ -31,11 +31,14 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
     const response = await this.natsConnection.request(
       subject,
-      jsonMessageCodec.encode(message),
-      requestOptions.timeout ? {timeout: requestOptions.timeout} : undefined
+      ...jsonMessageCodec.encode(message, false, requestOptions.timeout ? {timeout: requestOptions.timeout} : undefined),
     )
-    const responseData = jsonMessageCodec.decode(response.data)
-    assertErrorResponse(responseData)
+    const responseData = jsonMessageCodec.decode(response.data, response.headers)
+
+    if (responseData instanceof RemoteError) {
+      throw responseData
+    }
+
     return responseData as ResponseType
   }
 
@@ -44,7 +47,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
       throw new Error(`Subject ${subject} is not connected`)
     }
 
-    this.natsConnection.publish(subject, jsonMessageCodec.encode(message))
+    this.natsConnection.publish(subject, ...jsonMessageCodec.encode(message, false))
   }
 
   subscribeSubject(
@@ -77,7 +80,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
         let data: MessageType
 
         try {
-          data = jsonMessageCodec.decode(m.data) as any
+          data = jsonMessageCodec.decode(m.data, m.headers) as any
         } catch (e) {
           log.error(`Cannot handle subject ${subject}, failed to parse data`, e)
           continue
@@ -95,11 +98,11 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
                 if (m.reply) {
                   // awaiting reply
-                  m.respond(jsonMessageCodec.encode(r))
+                  m.respond(...jsonMessageCodec.encode(r, false))
                 }
               } catch (e: any) {
                 if (m.reply) {
-                  m.respond(jsonMessageCodec.encode(errorResponse(e)))
+                  m.respond(...jsonMessageCodec.encode({message: e.message}, true))
                  } else {
                   log.error(`Cannot handle subject ${subject} with data ${JSON.stringify(data)}`, e)
                 }
