@@ -1,16 +1,26 @@
 import {RemoteProcedure} from "../src/RemoteProcedure.js"
 import {assert} from "chai"
-import {createNatsMock} from "./mockNatsConnection.js"
+import {connect, NatsConnection} from "nats"
 
 describe("encoding", () => {
-  it("error", async () => {
-    const natsMock = createNatsMock()
+  let natsConnection: NatsConnection | null = null
 
+  beforeEach(async () => {
+    natsConnection = await connect()
+  })
+
+  afterEach(async () => {
+    if (natsConnection) {
+      await natsConnection.drain()
+    }
+  })
+
+  it("error", async () => {
     const s = new (class extends RemoteProcedure {
       constructor() {
         super("subject")
 
-        this.setNatsConnection(natsMock.connection)
+        this.setNatsConnection(natsConnection!)
       }
     })()
 
@@ -27,5 +37,22 @@ describe("encoding", () => {
   })
 
   it("compression", async () => {
+    const s = new (class extends RemoteProcedure<void, string> {
+      constructor() {
+        super("subject")
+
+        this.setNatsConnection(natsConnection!)
+      }
+    })()
+
+    const largeString = "a".repeat(5000)
+
+    s.implement(async () => {
+      return largeString
+    })
+
+    const response = await s.request()
+
+    assert.equal(response, largeString)
   })
 })

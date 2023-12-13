@@ -101,10 +101,11 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
                   m.respond(...jsonMessageCodec.encode(r, false))
                 }
               } catch (e: any) {
+                // need to log error to save stack trace
+                log.error(`Cannot handle subject ${subject} with data ${JSON.stringify(data)}`, e)
+
                 if (m.reply) {
                   m.respond(...jsonMessageCodec.encode({message: e.message}, true))
-                 } else {
-                  log.error(`Cannot handle subject ${subject} with data ${JSON.stringify(data)}`, e)
                 }
               }
             },
@@ -142,7 +143,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
 export type Subscription = {
   stop(): Promise<void>
-  monitor(opts: {queue: (name: string, size: QueueStats) => void}): void
+  monitor(opts: { queue: (name: string, size: QueueStats) => void }): void
 }
 
 export type Context = {

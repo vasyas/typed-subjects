@@ -2,31 +2,41 @@ import {assert} from "chai"
 import loglevel from "loglevel"
 import {FilteringSubject} from "../src/index.js"
 import {FilteringSubjectContext} from "../src/FilteringSubject.js"
-import {createNatsMock} from "./mockNatsConnection.js"
+import {connect, NatsConnection} from "nats"
 
 loglevel.enableAll()
 
 describe("misc", () => {
+  let natsConnection: NatsConnection | null = null
+
+  beforeEach(async () => {
+    natsConnection = await connect()
+  })
+
+  afterEach(async () => {
+    if (natsConnection) {
+      await natsConnection.drain()
+    }
+  })
+
   it("escaping subject", async () => {
     let receivedSubject: string | null = null
     let receivedParams: Partial<{name: string}> | null = null
-
-    const natsMock = createNatsMock()
 
     const s = new (class extends FilteringSubject<{name: string}> {
       constructor() {
         super("subject.$name")
 
-        this.setNatsConnection(natsMock.connection)
+        this.setNatsConnection(natsConnection!)
       }
     })()
-
-    await s.publish({name: "a.b"})
 
     s.subscribe(async (msg, ctx: FilteringSubjectContext<Partial<{name: string}>>) => {
       receivedSubject = ctx.subject
       receivedParams = ctx.params
     })
+
+    s.publish({name: "a.b"})
 
     // receiving is async
     await new Promise((r) => setTimeout(r, 100))

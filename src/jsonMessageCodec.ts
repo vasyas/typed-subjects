@@ -5,7 +5,7 @@ import zlib from 'zlib'
 const TD = new TextDecoder()
 const TE = new TextEncoder()
 
-const COMPRESS_THRESHOLD = 1024
+const COMPRESS_THRESHOLD = 4096
 
 export const jsonMessageCodec = {
   encode(d: unknown, error: boolean, opts?: RequestOptions): [Uint8Array, RequestOptions?] {
