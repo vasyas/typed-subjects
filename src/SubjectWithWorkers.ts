@@ -98,17 +98,16 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
                   m.respond(jsonMessageCodec.encode(r))
                 }
               } catch (e: any) {
-                log.error(`Cannot handle subject ${subject} with data ${JSON.stringify(data)}`, e)
-
                 if (m.reply) {
                   m.respond(jsonMessageCodec.encode(errorResponse(e)))
+                 } else {
+                  log.error(`Cannot handle subject ${subject} with data ${JSON.stringify(data)}`, e)
                 }
               }
             },
             options.timeout ? {timeout: options.timeout, throwOnTimeout: true} : undefined
           )
           .catch((e) => {
-            // could this really happen? didn't we catch everything above?
             log.error(`Failing to handle subject ${subject} with data ${JSON.stringify(data)}`, e)
           })
       }
