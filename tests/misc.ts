@@ -1,18 +1,18 @@
 import {assert} from "chai"
 import loglevel from "loglevel"
 import {NatsConnection} from "nats"
-import {FilteringSubject} from "../src"
-import {FilteringSubjectContext} from "../src/FilteringSubject"
+import {FilteringSubject} from "../src/index.js"
+import {FilteringSubjectContext} from "../src/FilteringSubject.js"
 
 loglevel.enableAll()
 
 describe("misc", () => {
   it("escaping subject", async () => {
-    let receivedSubject = null
-    let receivedParams = null
+    let receivedSubject: string | null = null
+    let receivedParams: Partial<{name: string}> | null = null
 
-    let transportSubscribeSubject = null
-    let transportPublishSubject = null
+    let transportSubscribeSubject: string
+    let transportPublishSubject: string
 
     const mockNatsConnection: NatsConnection = {
       msgQueue: [],
@@ -40,7 +40,7 @@ describe("misc", () => {
         }
       },
 
-      async publish(s: string, data) {
+      async publish(s: string, data: any) {
         transportPublishSubject = s
         this.msgQueue.push(data)
       },
@@ -56,7 +56,7 @@ describe("misc", () => {
 
     await s.publish({name: "a.b"})
 
-    s.subscribe(async (msg, ctx: FilteringSubjectContext<never>) => {
+    s.subscribe(async (msg, ctx: FilteringSubjectContext<Partial<{name: string}>>) => {
       receivedSubject = ctx.subject
       receivedParams = ctx.params
     })
@@ -64,7 +64,7 @@ describe("misc", () => {
     // receiving is async
     await new Promise((r) => setTimeout(r, 100))
 
-    assert.equal(receivedParams.name, "a.b")
+    assert.equal(receivedParams!.name, "a.b")
     assert.equal(receivedSubject, "subject.a%2eb")
   })
 })

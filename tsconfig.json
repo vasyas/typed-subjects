@@ -15,5 +15,8 @@
     "preserveConstEnums": true,
     "outDir": "dist"
   },
+  "ts-node": {
+    "esm": true
+  },
   "include": ["src/**/*.ts"]
 }
