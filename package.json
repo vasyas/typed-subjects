@@ -28,8 +28,8 @@
     "access": "public"
   },
   "license": "MIT",
-  "engines" : {
-    "node" : ">=16.0.0"
+  "engines": {
+    "node": ">=16.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.15",
