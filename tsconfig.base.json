@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "target": "es2020",
-    "moduleResolution": "nodenext",
     "lib": [
       "es2020"
     ],
+    "sourceMap": true,
     "declaration": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -13,10 +11,5 @@
     "strict": true,
     "noImplicitAny": true,
     "preserveConstEnums": true,
-    "outDir": "dist"
-  },
-  "ts-node": {
-    "esm": true
-  },
-  "include": ["src/**/*.ts"]
+  }
 }
