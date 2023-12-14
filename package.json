@@ -1,6 +1,6 @@
 {
   "name": "typed-subjects",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "Making type-safe calls via NATS",
   "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
