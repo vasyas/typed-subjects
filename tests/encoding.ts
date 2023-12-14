@@ -1,4 +1,4 @@
-import {RemoteProcedure} from "../src/RemoteProcedure.js"
+import {RemoteProcedure} from "../src/RemoteProcedure"
 import {assert} from "chai"
 import {connect, NatsConnection} from "nats"
 

@@ -1,10 +1,10 @@
 import CallableInstance from "callable-instance"
 import log from "loglevel"
 import {NatsConnection} from "nats"
-import {jsonMessageCodec, RemoteError} from "./jsonMessageCodec.js"
-import {Middleware} from "./middleware.js"
-import {composeMiddleware, getObjectProps} from "./utils.js"
-import {createWorkerQueue, QueueStats, removeWorkerQueue} from "./WorkerQueue.js"
+import {jsonMessageCodec, RemoteError} from "./jsonMessageCodec"
+import {Middleware} from "./middleware"
+import {composeMiddleware, getObjectProps} from "./utils"
+import {createWorkerQueue, QueueStats, removeWorkerQueue} from "./WorkerQueue"
 
 /**
  * Base class for working with Subjects.

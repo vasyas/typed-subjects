@@ -4,9 +4,9 @@
  * Implement by creating TypedSubject and RemoteProcedure. TypedSubject is triggered by publisher,
  * RemoteProcedure is called by subscriber when subscribing.
  */
-import {RemoteProcedure} from "./RemoteProcedure.js"
-import {Context, Subscription, SubscriptionOptions} from "./SubjectWithWorkers.js"
-import {TypedSubject} from "./TypedSubject.js"
+import {RemoteProcedure} from "./RemoteProcedure"
+import {Context, Subscription, SubscriptionOptions} from "./SubjectWithWorkers"
+import {TypedSubject} from "./TypedSubject"
 
 export class DeltaSubject<MessageType> {
   constructor(private subject: string) {

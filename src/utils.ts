@@ -1,5 +1,5 @@
-import {Middleware} from "./middleware.js"
-import {RemoteError} from "./jsonMessageCodec.js"
+import {Middleware} from "./middleware"
+import {RemoteError} from "./jsonMessageCodec"
 
 export function getObjectProps(obj: unknown) {
   let props: string[] = []

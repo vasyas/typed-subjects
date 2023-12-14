@@ -1,5 +1,5 @@
 import {assert} from "chai"
-import {createWorkerQueue, WorkerQueue} from "../src/WorkerQueue.js"
+import {createWorkerQueue} from "../src/WorkerQueue"
 
 describe("worker queue", () => {
   it("remove item after error", async () => {

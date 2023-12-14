@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "module": "CommonJS",
+    "target": "es2020",
+    "outDir": "dist/cjs",
+    "declarationDir": "dist/types",
     "lib": [
       "es2020"
     ],
@@ -11,5 +15,6 @@
     "strict": true,
     "noImplicitAny": true,
     "preserveConstEnums": true,
-  }
+  },
+  "include": ["src/**/*.ts"]
 }

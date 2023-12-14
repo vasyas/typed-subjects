@@ -4,7 +4,7 @@ import {
   SubjectWithWorkers,
   Subscription,
   SubscriptionOptions,
-} from "./SubjectWithWorkers.js"
+} from "./SubjectWithWorkers"
 
 /**
  * Subject that will allow filtering of data based on partial properties of transferred message.

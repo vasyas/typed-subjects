@@ -1,7 +1,7 @@
 import {assert} from "chai"
 import loglevel from "loglevel"
-import {FilteringSubject} from "../src/index.js"
-import {FilteringSubjectContext} from "../src/FilteringSubject.js"
+import {FilteringSubject} from "../src"
+import {FilteringSubjectContext} from "../src/FilteringSubject"
 import {connect, NatsConnection} from "nats"
 
 loglevel.enableAll()

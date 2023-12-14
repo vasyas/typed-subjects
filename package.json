@@ -2,17 +2,12 @@
   "name": "typed-subjects",
   "version": "1.0.17",
   "description": "Making type-safe calls via NATS",
-  "main": "./dist/esm/index.js",
+  "main": "./dist/cjs/index.js",
   "types": "./dist/types/index.d.ts",
-  "exports": {
-    "import": "./dist/esm/index.js",
-    "require": "./dist/cjs/index.js",
-    "default": "./dist/esm/index.js"
-  },
   "scripts": {
     "prepublishOnly": "yarn build && yarn test",
-    "build": "rm -fr dist && tsc --project tsconfig.esm.json & tsc --project tsconfig.cjs.json",
-    "test": "TS_NODE_PROJECT=./tsconfig.esm.json mocha tests/**/*.ts"
+    "build": "tsc",
+    "test": "mocha -r ts-node/reigster tests/**/*.ts"
   },
   "keywords": [
     "nats",

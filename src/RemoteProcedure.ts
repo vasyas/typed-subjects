@@ -4,7 +4,7 @@ import {
   SubjectWithWorkers,
   Subscription,
   SubscriptionOptions,
-} from "./SubjectWithWorkers.js"
+} from "./SubjectWithWorkers"
 
 /**
  * Remote procedure with single request object and single result object.
