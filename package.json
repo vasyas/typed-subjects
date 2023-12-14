@@ -13,7 +13,7 @@
   "scripts": {
     "prepublishOnly": "yarn build && yarn test",
     "build": "rm -fr dist && tsc --project tsconfig.esm.json & tsc --project tsconfig.cjs.json",
-    "test": "mocha tests/**/*.ts"
+    "test": "TS_NODE_PROJECT=./tsconfig.esm.json mocha tests/**/*.ts"
   },
   "keywords": [
     "nats",
