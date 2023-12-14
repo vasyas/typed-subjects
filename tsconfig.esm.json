@@ -1,8 +1,9 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "NodeNext",
-    "target": "es2020",
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "Node",
     "outDir": "dist/esm",
     "declarationDir": "dist/types"
   },
