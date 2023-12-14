@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "node16",
     "target": "es2020",
     "outDir": "dist/cjs",
     "declarationDir": "dist/types",

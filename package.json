@@ -1,13 +1,13 @@
 {
   "name": "typed-subjects",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Making type-safe calls via NATS",
   "main": "./dist/cjs/index.js",
   "types": "./dist/types/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn build && yarn test",
-    "build": "tsc",
-    "test": "mocha -r ts-node/reigster tests/**/*.ts"
+    "build": "rm -fr dist && tsc",
+    "test": "mocha -r ts-node/register tests/**/*.ts"
   },
   "keywords": [
     "nats",
@@ -40,6 +40,6 @@
     "callable-instance": "^2.0.0",
     "loglevel": "^1.7.1",
     "nats": "^2.18.0",
-    "p-queue": "^7.4.1"
+    "p-queue": "^6.6.2"
   }
 }
