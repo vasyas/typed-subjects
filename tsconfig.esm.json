@@ -9,6 +9,9 @@
   },
   "include": ["src/**/*.ts"],
   "ts-node": {
-    "esm": true
+    "esm": true,
+    "moduleTypes": {
+      "*": "esm"
+    }
   }
 }
