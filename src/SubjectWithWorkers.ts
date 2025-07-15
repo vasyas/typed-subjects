@@ -1,6 +1,6 @@
 import CallableInstance from "callable-instance"
 import log from "loglevel"
-import {NatsConnection} from "nats"
+import {Msg, NatsConnection, NatsError} from "nats"
 import {jsonMessageCodec, RemoteError} from "./jsonMessageCodec"
 import {Middleware} from "./middleware"
 import {composeMiddleware, getObjectProps} from "./utils"
@@ -29,10 +29,38 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
       throw new Error(`Subject ${subject} is not connected`)
     }
 
-    const response = await this.natsConnection.request(
-      subject,
-      ...jsonMessageCodec.encode(message, false, requestOptions.timeout ? {timeout: requestOptions.timeout} : undefined),
-    )
+    const started = Date.now()
+    const step = (requestOptions.noResponderTimeout ?? 0) / 10
+
+    let response: Msg | undefined
+
+    // retry until responder is available
+    while (true) {
+      try {
+        response = await this.natsConnection.request(
+          subject,
+          ...jsonMessageCodec.encode(
+            message,
+            false,
+            requestOptions.timeout ? {timeout: requestOptions.timeout} : undefined
+          )
+        )
+
+        break
+      } catch (e: any) {
+        if (e.name == "NatsError" && e.code === "503") {
+          if (Date.now() - started > (requestOptions.noResponderTimeout || 0)) {
+            throw e
+          }
+
+          // wait for a while before retrying
+          await new Promise((r) => setTimeout(r, step))
+        } else {
+          throw e
+        }
+      }
+    }
+
     const responseData = jsonMessageCodec.decode(response.data, response.headers)
 
     if (responseData instanceof RemoteError) {
@@ -94,7 +122,9 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
                 const context = {subject: m.subject}
 
                 const invokeLocalMethod = (p = data) => handle(p, context)
-                const r = middleware ? await middleware(context, invokeLocalMethod, data) : await invokeLocalMethod()
+                const r = middleware
+                  ? await middleware(context, invokeLocalMethod, data)
+                  : await invokeLocalMethod()
 
                 if (m.reply) {
                   // awaiting reply
@@ -143,7 +173,7 @@ export class SubjectWithWorkers<MessageType, ResponseType = void> extends Callab
 
 export type Subscription = {
   stop(): Promise<void>
-  monitor(opts: { queue: (name: string, size: QueueStats) => void }): void
+  monitor(opts: {queue: (name: string, size: QueueStats) => void}): void
 }
 
 export type Context = {
@@ -185,4 +215,5 @@ export function connectSubjects(root: Record<string, any>, natsConnection: NatsC
 
 export type RequestOptions = {
   timeout: number
+  noResponderTimeout: number
 }

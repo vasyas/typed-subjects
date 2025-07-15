@@ -14,7 +14,7 @@ import {
  */
 export class FilteringSubject<
   DataType extends Record<string, unknown>,
-  ResponseType = void
+  ResponseType = void,
 > extends SubjectWithWorkers<DataType, ResponseType> {
   constructor(
     private subjectTemplate: string,
@@ -28,11 +28,7 @@ export class FilteringSubject<
   }
 
   request(message: DataType): Promise<ResponseType> {
-    return super.requestSubject(
-      this.renderSubject(message),
-      message,
-      this.requestOptions.timeout ? {timeout: this.requestOptions.timeout} : undefined
-    )
+    return super.requestSubject(this.renderSubject(message), message, this.requestOptions)
   }
 
   implement(
