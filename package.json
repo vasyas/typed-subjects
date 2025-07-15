@@ -1,6 +1,6 @@
 {
   "name": "typed-subjects",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Making type-safe calls via NATS",
   "main": "./dist/cjs/index.js",
   "types": "./dist/types/index.d.ts",
