@@ -39,7 +39,9 @@
   "dependencies": {
     "callable-instance": "^2.0.0",
     "loglevel": "^1.7.1",
-    "nats": "^2.18.0",
     "p-queue": "^6.6.2"
+  },
+  "peerDependencies": {
+    "nats": "^2.18.0"
   }
 }
